@@ -1,12 +1,11 @@
-"use client"
-
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Textarea } from "@/components/ui/textarea"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Copy, Download, FileText } from "lucide-react"
+"use client";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Textarea } from "@/components/ui/textarea";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Copy, Download, FileText } from "lucide-react";
 
 export default function ApiDocsGenerator() {
   const [code, setCode] = useState<string>("");
@@ -18,10 +17,8 @@ export default function ApiDocsGenerator() {
   // Example function to generate API docs using existing Node.js modules
   const generateDocs = async () => {
     setIsGenerating(true);
-    
     // Simulate processing time
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
+    await new Promise((resolve) => setTimeout(resolve, 1500));
     // This would use modules like jsdoc/typedoc for parsing in a real implementation
     const docs = generateSampleDocs(code, language, format);
     setGeneratedDocs(docs);
@@ -29,36 +26,29 @@ export default function ApiDocsGenerator() {
   };
 
   const generateSampleDocs = (code: string, language: string, format: string) => {
-    // This is a simplified example - in a real app, you'd use actual parsing
     if (!code.trim()) return "";
-    
+
     let docs = "";
-    
     if (language === "javascript") {
       // Extract function names and parameters
-      const functionMatches = code.match(/(?:async\s+)?function\s+(\w+)\s*$$([^)]*)$$/g) || [];
-      const arrowFunctionMatches = code.match(/const\s+(\w+)\s*=\s*(?:async\s*)?$$([^)]*)$$\s*=>/g) || [];
-      
+      const functionMatches = code.match(/(?:async\s+)?function\s+(\w+)\s*\(([^)]*)\)/g) || [];
+      const arrowFunctionMatches = code.match(/const\s+(\w+)\s*=\s*(?:async\s*)?\(([^)]*)\)\s*=>/g) || [];
       // Extract route handlers (Express.js style)
       const routeMatches = code.match(/(?:app|router)\.(?:get|post|put|delete|patch)\s*\(\s*['"]([^'"]+)['"]/g) || [];
-      
+
       if (format === "markdown") {
-        docs = "# API Documentation\n\n";
-        
+        docs = "# API Documentation\n";
         if (routeMatches.length > 0) {
-          docs += "## Endpoints\n\n";
-          
+          docs += "## Endpoints\n";
           for (const route of routeMatches) {
             const method = route.match(/\.(get|post|put|delete|patch)/)?.[1].toUpperCase() || "GET";
             const path = route.match(/['"]([^'"]+)['"]/)?.[1] || "/";
-            
-            docs += `### ${method} \`${path}\`\n\n`;
-            docs += "#### Description\n\n";
-            docs += "Handles the " + method + " request for " + path + "\n\n";
-            docs += "#### Parameters\n\n";
+            docs += `### ${method} \`${path}\`\n`;
+            docs += "#### Description\n";
+            docs += `Handles the ${method} request for ${path}\n`;
+            docs += "#### Parameters\n";
             docs += "| Name | Type | Description |\n";
             docs += "|------|------|-------------|\n";
-            
             if (path.includes(":")) {
               const params = path.match(/:[^/]+/g) || [];
               for (const param of params) {
@@ -68,29 +58,23 @@ export default function ApiDocsGenerator() {
             } else {
               docs += "| - | - | No parameters required |\n";
             }
-            
-            docs += "\n#### Response\n\n";
-            docs += "```json\n{\n  \"status\": \"success\",\n  \"data\": {}\n}\n```\n\n";
+            docs += "\n#### Response\n";
+            docs += "```json\n{\n  \"status\": \"success\",\n  \"data\": {}\n}\n```\n";
           }
         }
-        
+
         const functions = [...functionMatches, ...arrowFunctionMatches];
-        
         if (functions.length > 0) {
-          docs += "## Functions\n\n";
-          
+          docs += "## Functions\n";
           for (const func of functions) {
             const name = func.match(/(?:function|const)\s+(\w+)/)?.[1] || "unnamed";
-            const params = func.match(/$$([^)]*)$$/)?.[1] || "";
-            const paramList = params.split(",").map(p => p.trim()).filter(p => p);
-            
-            docs += `### ${name}(${params})\n\n`;
-            docs += "#### Parameters\n\n";
-            
+            const params = func.match(/\(([^)]*)\)/)?.[1] || "";
+            const paramList = params.split(",").map((p) => p.trim()).filter((p) => p);
+            docs += `### ${name}(${params})\n`;
+            docs += "#### Parameters\n";
             if (paramList.length > 0) {
               docs += "| Name | Type | Description |\n";
               docs += "|------|------|-------------|\n";
-              
               for (const param of paramList) {
                 const paramName = param.split("=")[0].trim();
                 docs += `| ${paramName} | any | The ${paramName} parameter |\n`;
@@ -98,22 +82,17 @@ export default function ApiDocsGenerator() {
             } else {
               docs += "This function does not take any parameters.\n";
             }
-            
-            docs += "\n#### Returns\n\n";
-            docs += "Returns a result based on the provided parameters.\n\n";
+            docs += "\n#### Returns\n";
+            docs += "Returns a result based on the provided parameters.\n";
           }
         }
       } else if (format === "openapi") {
         // Generate OpenAPI JSON
         const paths: Record<string, any> = {};
-        
         for (const route of routeMatches) {
           const method = route.match(/\.(get|post|put|delete|patch)/)?.[1].toLowerCase() || "get";
           const path = route.match(/['"]([^'"]+)['"]/)?.[1] || "/";
-          
-          // Convert Express path params (:id) to OpenAPI format ({id})
           const openApiPath = path.replace(/:([^/]+)/g, "{$1}");
-          
           const parameters = [];
           if (path.includes(":")) {
             const params = path.match(/:[^/]+/g) || [];
@@ -124,16 +103,14 @@ export default function ApiDocsGenerator() {
                 in: "path",
                 required: true,
                 schema: {
-                  type: "string"
-                }
+                  type: "string",
+                },
               });
             }
           }
-          
           if (!paths[openApiPath]) {
             paths[openApiPath] = {};
           }
-          
           paths[openApiPath][method] = {
             summary: `${method.toUpperCase()} endpoint for ${openApiPath}`,
             parameters,
@@ -147,57 +124,50 @@ export default function ApiDocsGenerator() {
                       properties: {
                         status: {
                           type: "string",
-                          example: "success"
+                          example: "success",
                         },
                         data: {
-                          type: "object"
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
+                          type: "object",
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
           };
         }
-        
         const openApiSpec = {
           openapi: "3.0.0",
           info: {
             title: "API Documentation",
             version: "1.0.0",
-            description: "API documentation generated from code"
+            description: "API documentation generated from code",
           },
-          paths
+          paths,
         };
-        
         docs = JSON.stringify(openApiSpec, null, 2);
       }
     } else if (language === "python") {
       // Extract function and class definitions
-      const functionMatches = code.match(/def\s+(\w+)\s*$$([^)]*)$$:/g) || [];
-      const classMatches = code.match(/class\s+(\w+)(?:$$([^)]*)$$)?:/g) || [];
-      
+      const functionMatches = code.match(/def\s+(\w+)\s*\(([^)]*)\):/g) || [];
+      const classMatches = code.match(/class\s+(\w+)(?:\(([^)]*)\))?:/g) || [];
       // Extract Flask/FastAPI route handlers
       const routeMatches = code.match(/@(?:app|router)\.(?:route|get|post|put|delete|patch)\s*\(\s*['"]([^'"]+)['"]/g) || [];
-      
+
       if (format === "markdown") {
-        docs = "# API Documentation\n\n";
-        
+        docs = "# API Documentation\n";
         if (routeMatches.length > 0) {
-          docs += "## Endpoints\n\n";
-          
+          docs += "## Endpoints\n";
           for (const route of routeMatches) {
             const method = route.includes(".route") ? "GET" : route.match(/\.(get|post|put|delete|patch)/)?.[1].toUpperCase() || "GET";
             const path = route.match(/['"]([^'"]+)['"]/)?.[1] || "/";
-            
-            docs += `### ${method} \`${path}\`\n\n`;
-            docs += "#### Description\n\n";
-            docs += "Handles the " + method + " request for " + path + "\n\n";
-            docs += "#### Parameters\n\n";
+            docs += `### ${method} \`${path}\`\n`;
+            docs += "#### Description\n";
+            docs += `Handles the ${method} request for ${path}\n`;
+            docs += "#### Parameters\n";
             docs += "| Name | Type | Description |\n";
             docs += "|------|------|-------------|\n";
-            
             if (path.includes("<")) {
               const params = path.match(/<[^>]+>/g) || [];
               for (const param of params) {
@@ -207,70 +177,55 @@ export default function ApiDocsGenerator() {
             } else {
               docs += "| - | - | No parameters required |\n";
             }
-            
-            docs += "\n#### Response\n\n";
-            docs += "```json\n{\n  \"status\": \"success\",\n  \"data\": {}\n}\n```\n\n";
+            docs += "\n#### Response\n";
+            docs += "```json\n{\n  \"status\": \"success\",\n  \"data\": {}\n}\n```\n";
           }
         }
-        
+
         if (functionMatches.length > 0) {
-          docs += "## Functions\n\n";
-          
+          docs += "## Functions\n";
           for (const func of functionMatches) {
             const name = func.match(/def\s+(\w+)/)?.[1] || "unnamed";
-            const params = func.match(/$$([^)]*)$$/)?.[1] || "";
-            const paramList = params.split(",").map(p => p.trim()).filter(p => p && p !== "self" && p !== "cls");
-            
-            docs += `### ${name}(${paramList.join(", ")})\n\n`;
-            docs += "#### Parameters\n\n";
-            
+            const params = func.match(/\(([^)]*)\)/)?.[1] || "";
+            const paramList = params.split(",").map((p) => p.trim()).filter((p) => p && p !== "self" && p !== "cls");
+            docs += `### ${name}(${paramList.join(", ")})\n`;
+            docs += "#### Parameters\n";
             if (paramList.length > 0) {
               docs += "| Name | Type | Description |\n";
               docs += "|------|------|-------------|\n";
-              
               for (const param of paramList) {
                 const paramName = param.split(":")[0].split("=")[0].trim();
                 const paramType = param.includes(":") ? param.split(":")[1].split("=")[0].trim() : "any";
-                docs += `| ${paramName} | ${  ? param.split(":")[1].split("=")[0].trim() : "any";
-                docs += `| $paramName| $paramType| The $paramNameparameter |\n`;
+                docs += `| ${paramName} | ${paramType} | The ${paramName} parameter |\n`;
               }
             } else {
               docs += "This function does not take any parameters.\n";
             }
-            
-            docs += "\n#### Returns\n\n";
-            docs += "Returns a result based on the provided parameters.\n\n";
+            docs += "\n#### Returns\n";
+            docs += "Returns a result based on the provided parameters.\n";
           }
         }
-        
+
         if (classMatches.length > 0) {
-          docs += "## Classes\n\n";
-          
+          docs += "## Classes\n";
           for (const cls of classMatches) {
             const name = cls.match(/class\s+(\w+)/)?.[1] || "unnamed";
-            const inheritance = cls.match(/$$([^)]*)$$/)?.[1] || "";
-            
-            docs += `### $name\n\n`;
-            
+            const inheritance = cls.match(/\(([^)]*)\)/)?.[1] || "";
+            docs += `### ${name}\n`;
             if (inheritance) {
-              docs += `Inherits from: ${inheritance}\n\n`;
+              docs += `Inherits from: ${inheritance}\n`;
             }
-            
-            docs += "#### Methods\n\n";
-            docs += "This class contains various methods. Please refer to the source code for details.\n\n";
+            docs += "#### Methods\n";
+            docs += "This class contains various methods. Please refer to the source code for details.\n";
           }
         }
       } else if (format === "openapi") {
         // Generate OpenAPI JSON
         const paths: Record<string, any> = {};
-        
         for (const route of routeMatches) {
           const method = route.includes(".route") ? "get" : route.match(/\.(get|post|put|delete|patch)/)?.[1].toLowerCase() || "get";
           const path = route.match(/['"]([^'"]+)['"]/)?.[1] || "/";
-          
-          // Convert Flask/FastAPI path params (<id>) to OpenAPI format ({id})
           const openApiPath = path.replace(/<([^>]+)>/g, "{$1}");
-          
           const parameters = [];
           if (path.includes("<")) {
             const params = path.match(/<[^>]+>/g) || [];
@@ -281,16 +236,14 @@ export default function ApiDocsGenerator() {
                 in: "path",
                 required: true,
                 schema: {
-                  type: "string"
-                }
+                  type: "string",
+                },
               });
             }
           }
-          
           if (!paths[openApiPath]) {
             paths[openApiPath] = {};
           }
-          
           paths[openApiPath][method] = {
             summary: `${method.toUpperCase()} endpoint for ${openApiPath}`,
             parameters,
@@ -304,34 +257,31 @@ export default function ApiDocsGenerator() {
                       properties: {
                         status: {
                           type: "string",
-                          example: "success"
+                          example: "success",
                         },
                         data: {
-                          type: "object"
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
+                          type: "object",
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
           };
         }
-        
         const openApiSpec = {
           openapi: "3.0.0",
           info: {
             title: "API Documentation",
             version: "1.0.0",
-            description: "API documentation generated from code"
+            description: "API documentation generated from code",
           },
-          paths
+          paths,
         };
-        
         docs = JSON.stringify(openApiSpec, null, 2);
       }
     }
-    
     return docs;
   };
 
@@ -359,14 +309,11 @@ export default function ApiDocsGenerator() {
             Generate API documentation from backend code automatically
           </p>
         </div>
-
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <Card>
             <CardHeader>
               <CardTitle>Source Code</CardTitle>
-              <CardDescription>
-                Paste your API code and select the language
-              </CardDescription>
+              <CardDescription>Paste your API code and select the language</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
@@ -380,7 +327,6 @@ export default function ApiDocsGenerator() {
                       <SelectItem value="python">Python</SelectItem>
                     </SelectContent>
                   </Select>
-                  
                   <Select value={format} onValueChange={setFormat}>
                     <SelectTrigger className="w-[180px]">
                       <SelectValue placeholder="Select format" />
@@ -391,28 +337,23 @@ export default function ApiDocsGenerator() {
                     </SelectContent>
                   </Select>
                 </div>
-
                 <Textarea
-                  placeholder={language === "javascript" ? 
-                    "// Express.js API example\nconst express = require('express');\nconst app = express();\n\napp.get('/users', function getUsers(req, res) {\n  // Get all users\n  res.json({ users: [] });\n});\n\napp.get('/users/:id', function getUserById(req, res) {\n  // Get user by ID\n  const id = req.params.id;\n  res.json({ user: { id } });\n});" : 
-                    "# Flask API example\nfrom flask import Flask, jsonify\n\napp = Flask(__name__)\n\n@app.route('/users')\ndef get_users():\n    # Get all users\n    return jsonify(users=[])\n\n@app.route('/users/<id>')\ndef get_user_by_id(id):\n    # Get user by ID\n    return jsonify(user={'id': id})"}
+                  placeholder={
+                    language === "javascript"
+                      ? "// Express.js API example\nconst express = require('express');\nconst app = express();\napp.get('/users', function getUsers(req, res) {\n  // Get all users\n  res.json({ users: [] });\n});\napp.get('/users/:id', function getUserById(req, res) {\n  // Get user by ID\n  const id = req.params.id;\n  res.json({ user: { id } });\n});"
+                      : "# Flask API example\nfrom flask import Flask, jsonify\napp = Flask(__name__)\n@app.route('/users')\ndef get_users():\n    # Get all users\n    return jsonify(users=[])\n@app.route('/users/<id>')\ndef get_user_by_id(id):\n    # Get user by ID\n    return jsonify(user={'id': id})"
+                  }
                   className="font-mono h-64"
                   value={code}
                   onChange={(e) => setCode(e.target.value)}
                 />
-
-                <Button 
-                  onClick={generateDocs} 
-                  disabled={!code.trim() || isGenerating}
-                  className="w-full"
-                >
+                <Button onClick={generateDocs} disabled={!code.trim() || isGenerating} className="w-full">
                   {isGenerating ? "Generating..." : "Generate Documentation"}
                   {!isGenerating && <FileText className="ml-2 h-4 w-4" />}
                 </Button>
               </div>
             </CardContent>
           </Card>
-
           <Card>
             <CardHeader>
               <CardTitle>Generated Documentation</CardTitle>
@@ -461,4 +402,3 @@ export default function ApiDocsGenerator() {
     </div>
   );
 }
-
