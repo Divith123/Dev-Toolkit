@@ -67,12 +67,6 @@ export function MainNav() {
               </DropdownMenuGroup>
             </DropdownMenuContent>
           </DropdownMenu>
-          <Link href="/pricing" className="text-sm font-medium transition-colors hover:text-primary">
-            Pricing
-          </Link>
-          <Link href="/docs" className="text-sm font-medium transition-colors hover:text-primary">
-            Docs
-          </Link>
         </nav>
       </div>
 
