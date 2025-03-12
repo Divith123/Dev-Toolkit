@@ -219,46 +219,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Testimonials Section */}
-      <section className="w-full py-12 md:py-24 lg:py-32 bg-muted/50">
-        <div className="container px-4 md:px-6">
-          <div className="flex flex-col items-center justify-center space-y-4 text-center mb-12">
-            <div className="inline-block px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium mb-2">
-              Testimonials
-            </div>
-            <div className="space-y-2">
-              <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl">What Developers Say</h2>
-              <p className="mx-auto max-w-[700px] text-muted-foreground md:text-xl">
-                Hear from developers who use our toolkit every day
-              </p>
-            </div>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-8">
-            <TestimonialCard
-              quote="The test case generator saved me hours of writing boilerplate tests. Highly recommended!"
-              author="Sarah Chen"
-              role="Senior Developer"
-              company="TechCorp"
-              image="/placeholder.svg?height=80&width=80"
-            />
-            <TestimonialCard
-              quote="I use the SQL generator daily. It's like having a database expert on your team."
-              author="Michael Rodriguez"
-              role="Full Stack Engineer"
-              company="DataSystems"
-              image="/placeholder.svg?height=80&width=80"
-            />
-            <TestimonialCard
-              quote="The performance analyzer helped us identify critical bottlenecks in our codebase."
-              author="Jamie Taylor"
-              role="Tech Lead"
-              company="WebScale Inc."
-              image="/placeholder.svg?height=80&width=80"
-            />
-          </div>
-        </div>
-      </section>
-
+    
       {/* CTA Section */}
       <section className="w-full py-12 md:py-24 lg:py-32 bg-primary text-primary-foreground">
         <div className="container px-4 md:px-6">
